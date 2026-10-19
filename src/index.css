@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --dot: #34e3c8;
+}
+
+html,
+body {
+  background: #070a10;
+}
+
+body {
+  @apply font-sans text-slate-200 antialiased;
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 420px at 50% -120px, rgba(52, 227, 200, 0.10), transparent 70%),
+    #070a10;
+}
+
+/* ---------- per-task color, driven by the --c custom property ---------- */
+
+.jot-dot {
+  background: var(--c);
+  box-shadow:
+    0 0 4px var(--c),
+    0 0 12px color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+.jot-check {
+  border: 2px solid var(--c);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--c) 25%, transparent);
+}
+.jot-check[data-checked="true"] {
+  background: color-mix(in srgb, var(--c) 22%, transparent);
+}
+
+.jot-text {
+  color: var(--c);
+}
+
+.jot-row:hover {
+  background: color-mix(in srgb, var(--c) 6%, transparent);
+}
+
+/* ---------- add button ---------- */
+
+.jot-fab {
+  background: radial-gradient(circle at 35% 30%, #a8fbee 0%, #34e3c8 45%, #129a83 100%);
+  box-shadow:
+    0 0 0 1px rgba(52, 227, 200, 0.35),
+    0 0 24px rgba(52, 227, 200, 0.45),
+    0 0 60px rgba(52, 227, 200, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.jot-fab:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    0 0 0 1px rgba(52, 227, 200, 0.5),
+    0 0 32px rgba(52, 227, 200, 0.6),
+    0 0 80px rgba(52, 227, 200, 0.35),
+    0 12px 34px rgba(0, 0, 0, 0.55);
+}
+.jot-fab:active {
+  transform: scale(0.97);
+}
+
+/* ---------- color popover ---------- */
+
+.jot-popover {
+  background: rgba(18, 26, 39, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.6),
+    0 0 30px color-mix(in srgb, var(--c) 14%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.jot-swatch {
+  background: var(--s);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.jot-swatch:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--s) 60%, transparent);
+}
+.jot-swatch[aria-checked="true"] {
+  box-shadow:
+    0 0 0 2px #121a27,
+    0 0 0 4px var(--s),
+    0 0 14px color-mix(in srgb, var(--s) 60%, transparent);
+}
+
+@keyframes jot-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.jot-pop {
+  animation: jot-pop 140ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jot-pop { animation: none; }
+  .jot-fab, .jot-swatch { transition: none; }
+}
