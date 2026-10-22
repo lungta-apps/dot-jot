@@ -7,8 +7,9 @@ Guidance for Claude when working in this repo.
 - Do not run `npm install` from a Linux shell into this Windows folder (native binaries won't match). Bobbi runs it on Windows.
 
 ## Overview
+Live: https://dot-jot.vercel.app (Vercel, auto-deploys on push to `main`; no custom domain yet — may add one later).
 Dot Jot — minimal task jotter, part of the DOT Project (Habit Tracker, Project Tiles). Dark theme, bright colors, glow accents.
-Stack: React 18 + Vite 5 + TypeScript + Tailwind 3 + lucide-react. Mockup stage: tasks persist in localStorage only (key `dotjot.tasks.v1`).
+Stack: React 18 + Vite 5 + TypeScript + Tailwind 3 + lucide-react. Tasks persist in localStorage only (key `dotjot.tasks.v1`) — by design: no sign-in, no sync. It's for throwaway on-the-fly lists.
 
 ## Structure
 ```
