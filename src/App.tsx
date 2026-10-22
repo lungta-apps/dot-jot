@@ -5,6 +5,7 @@ import { DOT_TEAL } from "./lib/colors";
 import { loadTasks, newId, saveTasks } from "./lib/storage";
 import TaskItem from "./components/TaskItem";
 import AddTaskInput from "./components/AddTaskInput";
+import { useDragReorder } from "./hooks/useDragReorder";
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(loadTasks);
@@ -14,9 +15,9 @@ export default function App() {
 
   useEffect(() => saveTasks(tasks), [tasks]);
 
-  // Open tasks: oldest first (new ones land at the end). Completed: sink to the bottom, most recently completed first.
+  // Open tasks: in their drag order (new ones land at the end). Completed: sink to the bottom, most recently completed first.
   const { open, done } = useMemo(() => {
-    const open = tasks.filter((t) => !t.done).sort((a, b) => a.createdAt - b.createdAt);
+    const open = tasks.filter((t) => !t.done).sort((a, b) => a.order - b.order);
     const done = tasks
       .filter((t) => t.done)
       .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
@@ -47,10 +48,27 @@ export default function App() {
   }, [openAdd]);
 
   const addTask = (text: string) =>
-    setTasks((ts) => [
-      ...ts,
-      { id: newId(), text, color: DOT_TEAL, done: false, createdAt: Date.now(), completedAt: null },
-    ]);
+    setTasks((ts) => {
+      const order = ts.reduce((max, t) => Math.max(max, t.order), 0) + 1;
+      return [
+        ...ts,
+        { id: newId(), text, color: DOT_TEAL, done: false, createdAt: Date.now(), order, completedAt: null },
+      ];
+    });
+
+  // Move an open task from one position to another, then renumber the open tasks to match.
+  const moveOpen = useCallback(
+    (from: number, to: number) =>
+      setTasks((ts) => {
+        const list = ts.filter((t) => !t.done).sort((a, b) => a.order - b.order);
+        const [moved] = list.splice(from, 1);
+        list.splice(to, 0, moved);
+        const slots = list.map((t) => t.order).sort((a, b) => a - b);
+        const newOrder = new Map(list.map((t, i) => [t.id, slots[i]]));
+        return ts.map((t) => (newOrder.has(t.id) ? { ...t, order: newOrder.get(t.id)! } : t));
+      }),
+    []
+  );
 
   const update = (id: string, patch: Partial<Task>) =>
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -62,10 +80,19 @@ export default function App() {
 
   const closePicker = useCallback(() => setPickerId(null), []);
 
-  const renderTask = (t: Task) => (
+  const { listRef, handleProps, rowStyle, draggingId } = useDragReorder(
+    open.map((t) => t.id),
+    moveOpen,
+    closePicker
+  );
+
+  const renderTask = (t: Task, i?: number) => (
     <TaskItem
       key={t.id}
       task={t}
+      dragHandleProps={i === undefined ? undefined : handleProps(t.id, i)}
+      dragStyle={i === undefined ? undefined : rowStyle(i)}
+      dragging={draggingId === t.id}
       pickerOpen={pickerId === t.id}
       onTogglePicker={() => setPickerId((p) => (p === t.id ? null : t.id))}
       onClosePicker={closePicker}
@@ -112,7 +139,9 @@ export default function App() {
           </div>
         ) : (
           <>
-            <ul className="space-y-0.5">{open.map(renderTask)}</ul>
+            <ul ref={listRef} className="space-y-0.5">
+              {open.map((t, i) => renderTask(t, i))}
+            </ul>
             {adding && (
               <AddTaskInput ref={inputRef} onAdd={addTask} onClose={() => setAdding(false)} />
             )}
@@ -124,7 +153,7 @@ export default function App() {
                   </span>
                   <span className="h-px flex-1 bg-white/5" />
                 </div>
-                <ul className="space-y-0.5">{done.map(renderTask)}</ul>
+                <ul className="space-y-0.5">{done.map((t) => renderTask(t))}</ul>
               </>
             )}
           </>

@@ -7,7 +7,9 @@ export function loadTasks(): Task[] {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Tasks saved before drag-to-reorder have no `order`; creation time keeps their old sequence.
+    return parsed.map((t) => (typeof t.order === "number" ? t : { ...t, order: t.createdAt }));
   } catch {
     return [];
   }

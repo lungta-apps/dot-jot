@@ -45,6 +45,25 @@ body {
   background: color-mix(in srgb, var(--c) 6%, transparent);
 }
 
+/* ---------- drag to reorder ---------- */
+
+.jot-row-dragging,
+.jot-row-dragging:hover {
+  background: color-mix(in srgb, var(--c) 10%, #0d131d);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--c) 35%, transparent),
+    0 0 24px color-mix(in srgb, var(--c) 22%, transparent),
+    0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* While dragging: no text selection, grabbing cursor everywhere. */
+body.jot-dragging,
+body.jot-dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing !important;
+}
+
 /* ---------- add button ---------- */
 
 .jot-fab {

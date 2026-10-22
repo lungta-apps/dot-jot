@@ -14,7 +14,8 @@ Stack: React 18 + Vite 5 + TypeScript + Tailwind 3 + lucide-react. Mockup stage:
 ```
 src/
   App.tsx                  # State, persistence, ordering, header, FAB, "N" shortcut
-  types.ts                 # Task { id, text, color (hex), done, createdAt, completedAt }
+  types.ts                 # Task { id, text, color (hex), done, createdAt, order, completedAt }
+  hooks/useDragReorder.ts  # Dependency-free pointer drag-to-reorder (+ ↑/↓ on focused handle, edge auto-scroll)
   lib/colors.ts            # DOT_TEAL (#34E3C8), SWATCHES (2 rows of 7), normalizeHex
   lib/storage.ts           # localStorage load/save (try/catch), id generator
   components/TaskItem.tsx  # Row: color dot (opens picker) · checkbox · text · delete (hover)
@@ -28,5 +29,5 @@ Per-session summaries live in `summaries/YYYY-MM-DD.md` (same pattern as Habit T
 
 ## Conventions
 - Per-task color is set as `--c` on the row; `.jot-dot`, `.jot-check`, `.jot-text` read it (glows via `color-mix`).
-- Ordering: open tasks oldest first (new tasks land at the end, where the jot field sits); done tasks at the bottom, most recently completed first.
+- Ordering: open tasks sorted by `order` (drag handle on the right of each open row; new tasks get max+1 so they land at the end, where the jot field sits). Old saved tasks without `order` are migrated to `order = createdAt` on load. Done tasks at the bottom, most recently completed first; un-checking returns a task to its previous spot.
 - Default color is always DOT teal `#34E3C8` (rgb 52, 227, 200).
