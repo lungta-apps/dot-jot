@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 import type { Task } from "./types";
 import { DOT_TEAL } from "./lib/colors";
-import { loadCategories, loadTasks, newId, saveCategories, saveTasks } from "./lib/storage";
+import { loadCategories, loadNotes, loadTasks, newId, saveCategories, saveNotes, saveTasks } from "./lib/storage";
+import Notes from "./components/Notes";
 import type { Categories } from "./lib/storage";
 import CategoryBar from "./components/CategoryBar";
 import TaskItem from "./components/TaskItem";
@@ -19,6 +20,9 @@ export default function App() {
 
   useEffect(() => saveTasks(tasks), [tasks]);
   useEffect(() => saveCategories(categories), [categories]);
+
+  const [notes, setNotes] = useState<string>(loadNotes);
+  useEffect(() => saveNotes(notes), [notes]);
 
   const nameCategory = useCallback(
     (color: string, name: string) =>
@@ -125,7 +129,7 @@ export default function App() {
     const t = setTimeout(() => setConfirmClear(false), 3000);
     return () => clearTimeout(t);
   }, [confirmClear]);
-  // Big red ✕: wipes every task (open, done, any category). Two clicks, same as "Clear done".
+  // Big red ✕: wipes every task (open, done, any category) and the notes. Two clicks, same as "Clear done".
   // Category names are kept — they're settings, not tasks.
   const [confirmWipe, setConfirmWipe] = useState(false);
   useEffect(() => {
@@ -133,9 +137,15 @@ export default function App() {
     const t = setTimeout(() => setConfirmWipe(false), 3000);
     return () => clearTimeout(t);
   }, [confirmWipe]);
+  const hasNotes = notes.trim() !== "";
+  const taskWord = `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}`;
+  const wipeLabel =
+    tasks.length && hasNotes ? `Clear all ${taskWord} + notes` : tasks.length ? `Clear all ${taskWord}` : "Clear notes";
+
   const wipeAll = () => {
     if (!confirmWipe) return setConfirmWipe(true);
     setTasks([]);
+    setNotes("");
     setFilter(null);
     setPickerId(null);
     setAdding(false);
@@ -244,24 +254,26 @@ export default function App() {
             )}
           </>
         )}
+
+        <Notes value={notes} onChange={setNotes} />
       </main>
 
-      {tasks.length > 0 && (
+      {(tasks.length > 0 || notes.trim() !== "") && (
         <div className="fixed bottom-7 right-[104px] z-40 sm:bottom-12 sm:right-[136px]">
           {confirmWipe && (
             <div
               role="status"
               className="jot-pop jot-wipe-tip absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold"
             >
-              Clear all {tasks.length} {tasks.length === 1 ? "task" : "tasks"}? Click again
+              {wipeLabel}? Click again
             </div>
           )}
           <button
             type="button"
             onClick={wipeAll}
             onBlur={() => setConfirmWipe(false)}
-            aria-label={confirmWipe ? `Confirm: clear all ${tasks.length} tasks` : "Clear all tasks"}
-            title="Clear all tasks"
+            aria-label={confirmWipe ? `Confirm: ${wipeLabel.toLowerCase()}` : "Clear all tasks and notes"}
+            title="Clear all tasks and notes"
             className={`jot-wipe flex h-14 w-14 items-center justify-center rounded-full sm:h-16 sm:w-16 ${
               confirmWipe ? "jot-wipe-armed" : ""
             }`}

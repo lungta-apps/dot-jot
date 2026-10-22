@@ -122,6 +122,19 @@ body.jot-dragging * {
   cursor: grabbing !important;
 }
 
+/* ---------- notes ---------- */
+
+.jot-notes {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  caret-color: var(--dot);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.jot-notes:focus {
+  border-color: rgba(52, 227, 200, 0.35);
+  box-shadow: 0 0 20px rgba(52, 227, 200, 0.08);
+}
+
 /* ---------- clear done ---------- */
 
 .jot-clear-armed {

@@ -21,6 +21,7 @@ src/
   lib/storage.ts           # localStorage load/save (try/catch) for tasks + category names, id generator
   components/TaskItem.tsx  # Row: drag handle · delete (both on hover) · color dot (opens picker) · checkbox · text
   components/ColorPopover.tsx # Swatches + preview/native picker + hex field + Reset + category name field
+  components/Notes.tsx        # Free-form notes box under the tasks (auto-grows; `dotjot.notes.v1`); small ✕ in its corner clears just the notes (two-click)
   components/CategoryBar.tsx  # Filter chips for named colors in use (All + one per category)
   components/AddTaskInput.tsx # Inline jot field (below open tasks); Enter adds & stays open, Esc closes, blur adds then closes
   index.css                # Glow styles driven by the per-row CSS variable --c
@@ -37,5 +38,5 @@ Per-session summaries live in `summaries/YYYY-MM-DD.md` (same pattern as Habit T
 - Ordering: open tasks sorted by `order` (drag handle at the left of each open row; new tasks get max+1 so they land at the end, where the jot field sits). Old saved tasks without `order` are migrated to `order = createdAt` on load. Done tasks at the bottom, most recently completed first; un-checking returns a task to its previous spot.
 - Categories = names for colors, stored separately (`dotjot.categories.v1`, { "#HEX": "Name" }); a name applies to every task with that color. Chips show only named colors some task uses. While filtered, new tasks take the filter's color, and drag-reorder only swaps visible tasks (hidden ones keep their place).
 - "Clear done" (Done section header) is two-click (arms for 3s) and clears only the done tasks currently shown (respects the category filter).
-- Red ✕ beside the + clears ALL tasks (open + done, every category); two-click like Clear done. Keeps category names. Hidden when there are no tasks.
+- Red ✕ beside the + clears ALL tasks (open + done, every category) AND the notes; two-click like Clear done. Keeps category names. Hidden when there are no tasks and no notes.
 - Default color is always DOT teal `#34E3C8` (rgb 52, 227, 200).

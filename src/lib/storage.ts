@@ -51,3 +51,22 @@ export function saveCategories(cats: Categories): void {
     /* storage unavailable — names still work for this visit */
   }
 }
+
+const NOTES_KEY = "dotjot.notes.v1";
+
+export function loadNotes(): string {
+  try {
+    return localStorage.getItem(NOTES_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function saveNotes(text: string): void {
+  try {
+    if (text) localStorage.setItem(NOTES_KEY, text);
+    else localStorage.removeItem(NOTES_KEY);
+  } catch {
+    /* storage unavailable — notes still work for this visit */
+  }
+}
