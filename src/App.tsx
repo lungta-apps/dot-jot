@@ -98,6 +98,7 @@ export default function App() {
       onClosePicker={closePicker}
       onToggleDone={() => toggleDone(t)}
       onColor={(color) => update(t.id, { color })}
+      onText={(text) => update(t.id, { text })}
       onDelete={() => remove(t.id)}
     />
   );

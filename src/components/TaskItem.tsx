@@ -3,6 +3,7 @@ import type { ButtonHTMLAttributes, CSSProperties } from "react";
 import { Check, GripVertical, X } from "lucide-react";
 import type { Task } from "../types";
 import ColorPopover from "./ColorPopover";
+import EditableText from "./EditableText";
 
 interface Props {
   task: Task;
@@ -11,6 +12,7 @@ interface Props {
   onClosePicker: () => void;
   onToggleDone: () => void;
   onColor: (color: string) => void;
+  onText: (text: string) => void;
   onDelete: () => void;
   /** Present on open tasks only: props for the drag handle (pointer + keyboard). */
   dragHandleProps?: ButtonHTMLAttributes<HTMLButtonElement> & { "data-drag-handle": string };
@@ -25,6 +27,7 @@ export default function TaskItem({
   onClosePicker,
   onToggleDone,
   onColor,
+  onText,
   onDelete,
   dragHandleProps,
   dragStyle,
@@ -85,13 +88,7 @@ export default function TaskItem({
         {task.done && <Check size={14} strokeWidth={3} style={{ color: task.color }} />}
       </button>
 
-      <span
-        className={`jot-text min-w-0 flex-1 break-words text-[17px] leading-snug ${
-          task.done ? "line-through decoration-2" : ""
-        }`}
-      >
-        {task.text}
-      </span>
+      <EditableText text={task.text} done={task.done} onSave={onText} />
 
       <button
         type="button"
