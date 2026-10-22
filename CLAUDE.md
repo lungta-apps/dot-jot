@@ -25,6 +25,9 @@ src/
   index.css                # Glow styles driven by the per-row CSS variable --c
 ```
 
+## Install as an app
+`public/manifest.webmanifest` + `public/icons/` (192/512, maskable 512, apple-touch 180) make Dot Jot installable from Chrome/Edge (opens in its own window). No service worker — avoids stale-cache surprises after deploys. Tasks stay in that browser's localStorage either way.
+
 ## Session notes
 Per-session summaries live in `summaries/YYYY-MM-DD.md` (same pattern as Habit Tracker). Read the latest one first.
 
@@ -32,4 +35,6 @@ Per-session summaries live in `summaries/YYYY-MM-DD.md` (same pattern as Habit T
 - Per-task color is set as `--c` on the row; `.jot-dot`, `.jot-check`, `.jot-text` read it (glows via `color-mix`).
 - Ordering: open tasks sorted by `order` (drag handle at the left of each open row; new tasks get max+1 so they land at the end, where the jot field sits). Old saved tasks without `order` are migrated to `order = createdAt` on load. Done tasks at the bottom, most recently completed first; un-checking returns a task to its previous spot.
 - Categories = names for colors, stored separately (`dotjot.categories.v1`, { "#HEX": "Name" }); a name applies to every task with that color. Chips show only named colors some task uses. While filtered, new tasks take the filter's color, and drag-reorder only swaps visible tasks (hidden ones keep their place).
+- "Clear done" (Done section header) is two-click (arms for 3s) and clears only the done tasks currently shown (respects the category filter).
+- Red ✕ beside the + clears ALL tasks (open + done, every category); two-click like Clear done. Keeps category names. Hidden when there are no tasks.
 - Default color is always DOT teal `#34E3C8` (rgb 52, 227, 200).

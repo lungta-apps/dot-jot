@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import type { Task } from "./types";
 import { DOT_TEAL } from "./lib/colors";
 import { loadCategories, loadTasks, newId, saveCategories, saveTasks } from "./lib/storage";
@@ -117,6 +117,38 @@ export default function App() {
 
   const remove = (id: string) => setTasks((ts) => ts.filter((t) => t.id !== id));
 
+  // "Clear done": first click arms it, second click (within 3s) clears.
+  // Only clears the done tasks currently shown, so a category filter limits it to that category.
+  const [confirmClear, setConfirmClear] = useState(false);
+  useEffect(() => {
+    if (!confirmClear) return;
+    const t = setTimeout(() => setConfirmClear(false), 3000);
+    return () => clearTimeout(t);
+  }, [confirmClear]);
+  // Big red ✕: wipes every task (open, done, any category). Two clicks, same as "Clear done".
+  // Category names are kept — they're settings, not tasks.
+  const [confirmWipe, setConfirmWipe] = useState(false);
+  useEffect(() => {
+    if (!confirmWipe) return;
+    const t = setTimeout(() => setConfirmWipe(false), 3000);
+    return () => clearTimeout(t);
+  }, [confirmWipe]);
+  const wipeAll = () => {
+    if (!confirmWipe) return setConfirmWipe(true);
+    setTasks([]);
+    setFilter(null);
+    setPickerId(null);
+    setAdding(false);
+    setConfirmWipe(false);
+  };
+
+  const clearDone = () => {
+    if (!confirmClear) return setConfirmClear(true);
+    const ids = new Set(done.map((t) => t.id));
+    setTasks((ts) => ts.filter((t) => !ids.has(t.id)));
+    setConfirmClear(false);
+  };
+
   const closePicker = useCallback(() => setPickerId(null), []);
 
   const { listRef, handleProps, rowStyle, draggingId } = useDragReorder(
@@ -196,6 +228,16 @@ export default function App() {
                     Done
                   </span>
                   <span className="h-px flex-1 bg-white/5" />
+                  <button
+                    type="button"
+                    onClick={clearDone}
+                    onBlur={() => setConfirmClear(false)}
+                    className={`jot-clear rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
+                      confirmClear ? "jot-clear-armed" : "text-slate-500 hover:bg-white/5 hover:text-slate-200"
+                    }`}
+                  >
+                    {confirmClear ? `Clear ${done.length}? Click again` : "Clear done"}
+                  </button>
                 </div>
                 <ul className="space-y-0.5">{done.map((t) => renderTask(t))}</ul>
               </>
@@ -203,6 +245,31 @@ export default function App() {
           </>
         )}
       </main>
+
+      {tasks.length > 0 && (
+        <div className="fixed bottom-7 right-[104px] z-40 sm:bottom-12 sm:right-[136px]">
+          {confirmWipe && (
+            <div
+              role="status"
+              className="jot-pop jot-wipe-tip absolute bottom-full right-0 mb-3 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold"
+            >
+              Clear all {tasks.length} {tasks.length === 1 ? "task" : "tasks"}? Click again
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={wipeAll}
+            onBlur={() => setConfirmWipe(false)}
+            aria-label={confirmWipe ? `Confirm: clear all ${tasks.length} tasks` : "Clear all tasks"}
+            title="Clear all tasks"
+            className={`jot-wipe flex h-14 w-14 items-center justify-center rounded-full sm:h-16 sm:w-16 ${
+              confirmWipe ? "jot-wipe-armed" : ""
+            }`}
+          >
+            <X className="h-7 w-7 sm:h-8 sm:w-8" strokeWidth={2.75} />
+          </button>
+        </div>
+      )}
 
       <button
         type="button"

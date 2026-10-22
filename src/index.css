@@ -122,6 +122,14 @@ body.jot-dragging * {
   cursor: grabbing !important;
 }
 
+/* ---------- clear done ---------- */
+
+.jot-clear-armed {
+  color: #ff8a8a;
+  background: rgba(255, 107, 107, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.45), 0 0 14px rgba(255, 107, 107, 0.25);
+}
+
 /* ---------- add button ---------- */
 
 .jot-fab {
@@ -143,6 +151,43 @@ body.jot-dragging * {
 }
 .jot-fab:active {
   transform: scale(0.97);
+}
+
+/* ---------- clear-all button (red, beside the +) ---------- */
+
+.jot-wipe {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border: 2px solid rgba(255, 107, 107, 0.55);
+  box-shadow:
+    0 0 18px rgba(255, 107, 107, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+.jot-wipe:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: rgba(255, 107, 107, 0.18);
+  box-shadow:
+    0 0 26px rgba(255, 107, 107, 0.4),
+    0 12px 34px rgba(0, 0, 0, 0.55);
+}
+.jot-wipe-armed,
+.jot-wipe-armed:hover {
+  color: #1a0505;
+  background: radial-gradient(circle at 35% 30%, #ffb3b3 0%, #ff6b6b 45%, #c43c3c 100%);
+  border-color: #ff8a8a;
+  box-shadow:
+    0 0 0 1px rgba(255, 107, 107, 0.5),
+    0 0 30px rgba(255, 107, 107, 0.65),
+    0 0 70px rgba(255, 107, 107, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.jot-wipe-tip {
+  color: #ffd0d0;
+  background: rgba(40, 12, 14, 0.95);
+  border: 1px solid rgba(255, 107, 107, 0.5);
+  box-shadow: 0 0 18px rgba(255, 107, 107, 0.25), 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ---------- color popover ---------- */
@@ -181,5 +226,5 @@ body.jot-dragging * {
 
 @media (prefers-reduced-motion: reduce) {
   .jot-pop { animation: none; }
-  .jot-fab, .jot-swatch { transition: none; }
+  .jot-fab, .jot-swatch, .jot-wipe { transition: none; }
 }
