@@ -45,6 +45,52 @@ body {
   background: color-mix(in srgb, var(--c) 6%, transparent);
 }
 
+/* ---------- jot field (takes the active category's color) ---------- */
+
+.jot-addrow {
+  border-color: color-mix(in srgb, var(--c) 40%, transparent);
+  background: color-mix(in srgb, var(--c) 4%, transparent);
+}
+.jot-add-input {
+  color: var(--c);
+  caret-color: var(--c);
+}
+.jot-add-input::placeholder {
+  color: color-mix(in srgb, var(--c) 40%, transparent);
+}
+
+/* ---------- category filter chips ---------- */
+
+.jot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--c) 85%, #cbd5e1);
+  border: 1px solid color-mix(in srgb, var(--c) 28%, transparent);
+  background: color-mix(in srgb, var(--c) 5%, transparent);
+  transition: background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+.jot-chip:hover {
+  border-color: color-mix(in srgb, var(--c) 55%, transparent);
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+}
+.jot-chip[aria-pressed="true"] {
+  color: var(--c);
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--c) 35%, transparent);
+}
+.jot-chip-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
 /* ---------- editing a task's text ---------- */
 
 .jot-edit {

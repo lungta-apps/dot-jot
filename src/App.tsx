@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import type { Task } from "./types";
 import { DOT_TEAL } from "./lib/colors";
-import { loadTasks, newId, saveTasks } from "./lib/storage";
+import { loadCategories, loadTasks, newId, saveCategories, saveTasks } from "./lib/storage";
+import type { Categories } from "./lib/storage";
+import CategoryBar from "./components/CategoryBar";
 import TaskItem from "./components/TaskItem";
 import AddTaskInput from "./components/AddTaskInput";
 import { useDragReorder } from "./hooks/useDragReorder";
@@ -11,18 +13,48 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(loadTasks);
   const [adding, setAdding] = useState(false);
   const [pickerId, setPickerId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Categories>(loadCategories);
+  const [filter, setFilter] = useState<string | null>(null); // color hex of the category being shown
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => saveTasks(tasks), [tasks]);
+  useEffect(() => saveCategories(categories), [categories]);
+
+  const nameCategory = useCallback(
+    (color: string, name: string) =>
+      setCategories((c) => {
+        const next = { ...c };
+        if (name.trim()) next[color] = name.trim();
+        else delete next[color];
+        return next;
+      }),
+    []
+  );
+
+  // Chips: named colors that at least one task uses, in swatch order of first appearance.
+  const chips = useMemo(() => {
+    const seen = new Map<string, number>();
+    for (const t of tasks) {
+      if (!categories[t.color]) continue;
+      seen.set(t.color, (seen.get(t.color) ?? 0) + (t.done ? 0 : 1));
+    }
+    return Array.from(seen, ([color, count]) => ({ color, name: categories[color], count })).sort(
+      (a, b) => a.name.localeCompare(b.name)
+    );
+  }, [tasks, categories]);
+
+  // If the filtered category goes away (renamed blank, or its last task deleted), show everything again.
+  const activeFilter = filter && chips.some((c) => c.color === filter) ? filter : null;
 
   // Open tasks: in their drag order (new ones land at the end). Completed: sink to the bottom, most recently completed first.
   const { open, done } = useMemo(() => {
-    const open = tasks.filter((t) => !t.done).sort((a, b) => a.order - b.order);
-    const done = tasks
+    const shown = activeFilter ? tasks.filter((t) => t.color === activeFilter) : tasks;
+    const open = shown.filter((t) => !t.done).sort((a, b) => a.order - b.order);
+    const done = shown
       .filter((t) => t.done)
       .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
     return { open, done };
-  }, [tasks]);
+  }, [tasks, activeFilter]);
 
   const openAdd = useCallback(() => {
     setPickerId(null);
@@ -47,27 +79,34 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openAdd]);
 
+  // While a category is shown, new tasks join it (so they don't vanish from view).
+  const newColor = activeFilter ?? DOT_TEAL;
+
   const addTask = (text: string) =>
     setTasks((ts) => {
       const order = ts.reduce((max, t) => Math.max(max, t.order), 0) + 1;
       return [
         ...ts,
-        { id: newId(), text, color: DOT_TEAL, done: false, createdAt: Date.now(), order, completedAt: null },
+        { id: newId(), text, color: newColor, done: false, createdAt: Date.now(), order, completedAt: null },
       ];
     });
 
-  // Move an open task from one position to another, then renumber the open tasks to match.
+  // Move a task within the open list on screen. Only the visible tasks swap positions among
+  // themselves, so tasks hidden by a category filter keep their places.
+  const openIds = open.map((t) => t.id);
   const moveOpen = useCallback(
     (from: number, to: number) =>
       setTasks((ts) => {
-        const list = ts.filter((t) => !t.done).sort((a, b) => a.order - b.order);
+        const byId = new Map(ts.map((t) => [t.id, t]));
+        const list = openIds.map((id) => byId.get(id)!).filter(Boolean);
         const [moved] = list.splice(from, 1);
         list.splice(to, 0, moved);
         const slots = list.map((t) => t.order).sort((a, b) => a - b);
         const newOrder = new Map(list.map((t, i) => [t.id, slots[i]]));
         return ts.map((t) => (newOrder.has(t.id) ? { ...t, order: newOrder.get(t.id)! } : t));
       }),
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [openIds.join("|")]
   );
 
   const update = (id: string, patch: Partial<Task>) =>
@@ -90,6 +129,8 @@ export default function App() {
     <TaskItem
       key={t.id}
       task={t}
+      names={categories}
+      onName={nameCategory}
       dragHandleProps={i === undefined ? undefined : handleProps(t.id, i)}
       dragStyle={i === undefined ? undefined : rowStyle(i)}
       dragging={draggingId === t.id}
@@ -125,6 +166,8 @@ export default function App() {
         )}
       </header>
 
+      {chips.length > 0 && <CategoryBar chips={chips} active={activeFilter} onSelect={setFilter} />}
+
       <main>
         {tasks.length === 0 && !adding ? (
           <div className="mt-24 text-center">
@@ -144,7 +187,7 @@ export default function App() {
               {open.map((t, i) => renderTask(t, i))}
             </ul>
             {adding && (
-              <AddTaskInput ref={inputRef} onAdd={addTask} onClose={() => setAdding(false)} />
+              <AddTaskInput ref={inputRef} color={newColor} onAdd={addTask} onClose={() => setAdding(false)} />
             )}
             {done.length > 0 && (
               <>

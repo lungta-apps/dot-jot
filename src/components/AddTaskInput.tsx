@@ -1,13 +1,13 @@
 import { forwardRef, useState } from "react";
-import { DOT_TEAL } from "../lib/colors";
 
 interface Props {
+  color: string;
   onAdd: (text: string) => void;
   onClose: () => void;
 }
 
 /** Inline text field at the end of the open list. Enter adds and stays open. */
-const AddTaskInput = forwardRef<HTMLInputElement, Props>(({ onAdd, onClose }, ref) => {
+const AddTaskInput = forwardRef<HTMLInputElement, Props>(({ color, onAdd, onClose }, ref) => {
   const [text, setText] = useState("");
 
   const submit = () => {
@@ -22,12 +22,15 @@ const AddTaskInput = forwardRef<HTMLInputElement, Props>(({ onAdd, onClose }, re
 
   return (
     <div
-      className="jot-pop mt-0.5 flex items-center gap-3 rounded-xl border border-dot/40 bg-dot/[0.04] px-2 py-2.5"
+      className="jot-pop jot-addrow mt-0.5 flex items-center gap-3 rounded-xl border px-2 py-2.5"
       style={{
-        ["--c" as string]: DOT_TEAL,
-        boxShadow: "0 0 24px rgba(52,227,200,0.12), inset 0 0 12px rgba(52,227,200,0.05)",
+        ["--c" as string]: color,
+        boxShadow:
+          "0 0 24px color-mix(in srgb, var(--c) 12%, transparent), inset 0 0 12px color-mix(in srgb, var(--c) 5%, transparent)",
       }}
     >
+      {/* Spacer matching the drag handle + delete buttons on task rows, so the dots line up. */}
+      <span aria-hidden="true" className="-ml-1 w-[50px] shrink-0" />
       <span className="flex h-7 w-7 items-center justify-center">
         <span className="jot-dot block h-3 w-3 rounded-full" />
       </span>
@@ -54,7 +57,7 @@ const AddTaskInput = forwardRef<HTMLInputElement, Props>(({ onAdd, onClose }, re
         placeholder="Jot a task…"
         aria-label="New task"
         enterKeyHint="done"
-        className="min-w-0 flex-1 bg-transparent text-[17px] text-dot caret-dot outline-none placeholder:text-dot/40"
+        className="jot-add-input min-w-0 flex-1 bg-transparent text-[17px] outline-none"
       />
       <kbd className="hidden rounded border border-white/10 px-1.5 py-0.5 text-[11px] text-slate-500 sm:block">
         Enter

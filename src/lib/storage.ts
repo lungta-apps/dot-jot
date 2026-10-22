@@ -28,3 +28,26 @@ export function newId(): string {
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
+
+/** Category names, keyed by color hex (e.g. { "#34E3C8": "Work" }). */
+export type Categories = Record<string, string>;
+
+const CAT_KEY = "dotjot.categories.v1";
+
+export function loadCategories(): Categories {
+  try {
+    const raw = localStorage.getItem(CAT_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveCategories(cats: Categories): void {
+  try {
+    localStorage.setItem(CAT_KEY, JSON.stringify(cats));
+  } catch {
+    /* storage unavailable — names still work for this visit */
+  }
+}

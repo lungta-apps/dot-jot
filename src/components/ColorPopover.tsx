@@ -4,18 +4,24 @@ import { DOT_TEAL, SWATCHES, normalizeHex } from "../lib/colors";
 
 interface Props {
   color: string;
+  names: Record<string, string>; // category names by color
   onChange: (color: string) => void;
+  onName: (color: string, name: string) => void;
   onClose: () => void;
 }
 
-export default function ColorPopover({ color, onChange, onClose }: Props) {
+export default function ColorPopover({ color, names, onChange, onName, onClose }: Props) {
   const [hexText, setHexText] = useState(color);
   const [invalid, setInvalid] = useState(false);
+  const key = normalizeHex(color) ?? color;
+  const [nameText, setNameText] = useState(names[key] ?? "");
 
-  // Keep the text field in sync when a swatch / reset changes the color.
+  // Keep the text fields in sync when a swatch / reset changes the color.
   useEffect(() => {
     setHexText(color);
     setInvalid(false);
+    setNameText(names[normalizeHex(color) ?? color] ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [color]);
 
   const commitHex = (text: string) => {
@@ -59,12 +65,17 @@ export default function ColorPopover({ color, onChange, onClose }: Props) {
               type="button"
               role="radio"
               aria-checked={selected}
-              aria-label={s}
+              aria-label={names[s] ? `${names[s]} (${s})` : s}
+              title={names[s] ?? undefined}
               onClick={() => onChange(s)}
               className="jot-swatch flex h-7 w-7 items-center justify-center rounded-md"
               style={{ ["--s" as string]: s }}
             >
-              {selected && <Check size={15} strokeWidth={3} className="text-ink-900" />}
+              {selected ? (
+                <Check size={15} strokeWidth={3} className="text-ink-900" />
+              ) : (
+                names[s] && <span className="h-1.5 w-1.5 rounded-full bg-ink-900/70" aria-hidden="true" />
+              )}
             </button>
           );
         })}
@@ -118,6 +129,30 @@ export default function ColorPopover({ color, onChange, onClose }: Props) {
           Reset
         </button>
       </div>
+
+      <label className="mt-4 block">
+        <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          Category name
+        </span>
+        <input
+          type="text"
+          value={nameText}
+          maxLength={24}
+          placeholder="e.g. Work, Home, Errands"
+          onChange={(e) => {
+            setNameText(e.target.value);
+            onName(key, e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onClose();
+          }}
+          aria-label="Category name for this color"
+          className="h-9 w-full rounded-lg border border-white/10 bg-ink-950/70 px-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-[color:var(--c)]"
+        />
+        <span className="mt-1.5 block text-[11px] leading-snug text-slate-500">
+          Names this color for every task that uses it.
+        </span>
+      </label>
     </div>
   );
 }

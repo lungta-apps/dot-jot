@@ -7,6 +7,8 @@ import EditableText from "./EditableText";
 
 interface Props {
   task: Task;
+  names: Record<string, string>;
+  onName: (color: string, name: string) => void;
   pickerOpen: boolean;
   onTogglePicker: () => void;
   onClosePicker: () => void;
@@ -22,6 +24,8 @@ interface Props {
 
 export default function TaskItem({
   task,
+  names,
+  onName,
   pickerOpen,
   onTogglePicker,
   onClosePicker,
@@ -61,18 +65,53 @@ export default function TaskItem({
       } ${pickerOpen ? "z-20" : ""} ${dragging ? "jot-row-dragging" : ""}`}
       style={{ ["--c" as string]: task.color, ...dragStyle }}
     >
+      {/* Row controls on the left: drag handle, then delete. Shown on hover (always faintly on touch). */}
+      <div className="-ml-1 flex shrink-0 items-center gap-0.5">
+        {dragHandleProps ? (
+          <button
+            type="button"
+            {...dragHandleProps}
+            aria-label="Drag to reorder (or use the up and down arrow keys)"
+            title="Drag to reorder"
+            className={`jot-grip flex h-7 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-slate-500 transition-opacity hover:bg-white/5 hover:text-slate-200 focus:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-60 ${
+              dragging ? "cursor-grabbing text-slate-200 opacity-100" : "opacity-0"
+            }`}
+          >
+            <GripVertical size={16} />
+          </button>
+        ) : (
+          <span aria-hidden="true" className="w-6 shrink-0" />
+        )}
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Delete task"
+          title="Delete task"
+          className="flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-slate-500 opacity-0 transition-opacity hover:bg-white/5 hover:text-slate-200 focus:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-60"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
       <div ref={wrapRef} className="relative flex">
         <button
           type="button"
           onClick={onTogglePicker}
-          aria-label="Change task color"
+          aria-label={names[task.color] ? `Category: ${names[task.color]}. Change color` : "Change task color"}
+          title={names[task.color] ?? undefined}
           aria-expanded={pickerOpen}
           className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/5"
         >
           <span className="jot-dot block h-3 w-3 rounded-full" />
         </button>
         {pickerOpen && (
-          <ColorPopover color={task.color} onChange={onColor} onClose={onClosePicker} />
+          <ColorPopover
+            color={task.color}
+            names={names}
+            onChange={onColor}
+            onName={onName}
+            onClose={onClosePicker}
+          />
         )}
       </div>
 
@@ -90,30 +129,6 @@ export default function TaskItem({
 
       <EditableText text={task.text} done={task.done} onSave={onText} />
 
-      <button
-        type="button"
-        onClick={onDelete}
-        aria-label="Delete task"
-        className="rounded-md p-1 text-slate-500 opacity-0 transition-opacity hover:bg-white/5 hover:text-slate-200 focus:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-60"
-      >
-        <X size={16} />
-      </button>
-
-      {dragHandleProps ? (
-        <button
-          type="button"
-          {...dragHandleProps}
-          aria-label="Drag to reorder (or use the up and down arrow keys)"
-          title="Drag to reorder"
-          className={`jot-grip -mr-1 flex h-7 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-slate-500 transition-opacity hover:bg-white/5 hover:text-slate-200 focus:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-60 ${
-            dragging ? "cursor-grabbing text-slate-200 opacity-100" : "opacity-0"
-          }`}
-        >
-          <GripVertical size={16} />
-        </button>
-      ) : (
-        <span aria-hidden="true" className="-mr-1 w-6 shrink-0" />
-      )}
     </li>
   );
 }
